@@ -1,6 +1,6 @@
 # Dukpy
 
-[![Build Status](https://travis-ci.org/akheron/dukpy.svg?branch=master)](https://travis-ci.org/akheron/dukpy)
+[![Build Status](https://travis-ci.org/akheron/dukpy.svg?branch=master)](https://travis-ci.org/akheron/dukpy) [![Coverage Status](https://coveralls.io/repos/akheron/dukpy/badge.svg?branch=master)](https://coveralls.io/r/akheron/dukpy?branch=master)
 
 Dukpy is a JavaScript runtime environment for Python using the
 [duktape](http://duktape.org/) embeddable JavaScript engine. With
