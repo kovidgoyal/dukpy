@@ -1,5 +1,5 @@
 #include "dukpy.h"
-#include <python3.4m/structmember.h>
+#include <structmember.h>
 
 static void DukContext_init_internal(DukContext *self)
 {
