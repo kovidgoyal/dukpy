@@ -1,7 +1,7 @@
 #ifndef DUKPY_H
 #define DUKPY_H
 
-#include <python3.4m/Python.h>
+#include <Python.h>
 #include "duktape/duktape.h"
 
 typedef struct DukContext_ DukContext;
