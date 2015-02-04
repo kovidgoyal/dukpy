@@ -1,5 +1,7 @@
 # Dukpy
 
+[![Build Status](https://travis-ci.org/akheron/dukpy.svg?branch=master)](https://travis-ci.org/akheron/dukpy)
+
 Dukpy is a JavaScript runtime environment for Python using the
 [duktape](http://duktape.org/) embeddable JavaScript engine. With
 dukpy, you can run JavaScript in Python.
