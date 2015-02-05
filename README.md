@@ -7,20 +7,27 @@ Dukpy is a JavaScript runtime environment for Python using the
 dukpy, you can run JavaScript in Python.
 
 Example:
+```python
+import dukpy
 
-    import dukpy
+ctx = dukpy.Context()
+ctx.eval('str = "Hello, World!";');
 
-    ctx = dukpy.Context()
-    ctx.eval('str = "Hello, World!";');
+# ctx.g to refers to the global object
+print(ctx.g.str)
+# ==> Hello, World!
 
-    print(ctx.g.str)
-    # ==> Hello, World!
+# Python functions can be called from JavaScript
+def add(x, y):
+    return x + y
 
-    def add(x, y):
-        return x + y
+ctx.g.add = add
+ctx.eval('result = add(10, 32);')
+print(ctx.g.result)
+# ==> 42
 
-    ctx.g.add = add
-    ctx.eval('result = add(10, 32);')
-
-    print(ctx.g.result)
-    # ==> 42
+# JavaScript functions can be called from Python
+ctx.eval('var sub = function (x, y) { return x - y; };')
+print(ctx.g.sub(52, 10))
+# ==> 42
+```
