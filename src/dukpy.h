@@ -21,7 +21,6 @@ struct DukContext_ {
     PyObject_HEAD
     duk_context *ctx;
     DukContext *heap_manager;
-    DukObject *global;
 };
 
 PyTypeObject DukContext_Type;

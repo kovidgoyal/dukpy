@@ -9,10 +9,6 @@ static void DukContext_init_internal(DukContext *self)
     duk_push_pointer(self->ctx, self);
     duk_put_prop(self->ctx, -3);
     duk_pop(self->ctx);
-
-    duk_push_global_object(self->ctx);
-    self->global = DukObject_from_DukContext(self, -1);
-    duk_pop(self->ctx);
 }
 
 
@@ -175,9 +171,22 @@ static PyMethodDef DukContext_methods[] = {
     {NULL}
 };
 
-static PyMemberDef DukContext_members[] = {
-    {"g", T_OBJECT_EX, offsetof(DukContext, global), READONLY,
-     "The global object"},
+
+PyObject *DukContext_get_global(DukContext *self, void *closure)
+{
+    DukObject *global;
+    (void)closure;
+
+    duk_push_global_object(self->ctx);
+    global = DukObject_from_DukContext(self, -1);
+    duk_pop(self->ctx);
+
+    return (PyObject *)global;
+}
+
+
+static PyGetSetDef DukContext_getset[] = {
+    {"g", (getter)DukContext_get_global, NULL, "The global object", NULL},
     {NULL}
 };
 
@@ -211,8 +220,8 @@ PyTypeObject DukContext_Type = {
     0,                               /* tp_iter */
     0,                               /* tp_iternext */
     DukContext_methods,              /* tp_methods */
-    DukContext_members,              /* tp_members */
-    0,                               /* tp_getset */
+    0,                               /* tp_members */
+    DukContext_getset,               /* tp_getset */
     0,                               /* tp_base */
     0,                               /* tp_dict */
     0,                               /* tp_descr_get */
