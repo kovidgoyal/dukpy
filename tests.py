@@ -1,3 +1,4 @@
+import os
 import unittest
 from dukpy import Context, undefined
 
@@ -76,3 +77,48 @@ class ValueTests(unittest.TestCase):
         self.g.obj1 = {'a': 42}
         self.g.obj2 = self.g.obj1
         self.assertEqual(self.g.obj1.a, self.g.obj2.a)
+
+
+class EvalTests(unittest.TestCase):
+    def setUp(self):
+        self.ctx = Context()
+        self.g = self.ctx.g
+
+        self.testfile = 'dukpy_test.js'
+        with open(self.testfile, 'w') as fobj:
+            fobj.write('1+1')
+
+    def tearDown(self):
+        os.remove(self.testfile)
+
+    def test_eval_invalid_args(self):
+        with self.assertRaises(TypeError):
+            self.ctx.eval()
+
+        with self.assertRaises(TypeError):
+            self.ctx.eval(123)
+
+    def test_eval(self):
+        self.assertEqual(self.ctx.eval("1+1"), 2)
+
+    def test_eval_kwargs(self):
+        self.assertEqual(self.ctx.eval(code="1+1"), 2)
+
+    def test_eval_noreturn(self):
+        self.assertIsNone(self.ctx.eval("1+1", noreturn=True))
+
+    def test_eval_file_invalid_args(self):
+        with self.assertRaises(TypeError):
+            self.ctx.eval_file()
+
+        with self.assertRaises(TypeError):
+            self.ctx.eval_file(123)
+
+    def test_eval_file(self):
+        self.assertEqual(self.ctx.eval_file(self.testfile), 2)
+
+    def test_eval_file_kwargs(self):
+        self.assertEqual(self.ctx.eval_file(path=self.testfile), 2)
+
+    def test_eval_file_noreturn(self):
+        self.assertIsNone(self.ctx.eval_file(self.testfile, noreturn=True))
