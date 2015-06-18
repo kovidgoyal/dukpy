@@ -97,7 +97,7 @@ class ValueTests(unittest.TestCase):
         self.g.func = bad
         val = self.g.eval('try{func();}catch(err) {err.message}')
         self.assertTrue('testing a python exception xyz' in val)
-        self.assertTrue('function bad at 0x' in val)
+        self.assertTrue('bad at 0x' in val)
 
     def test_proxy(self):
         self.g.obj1 = {'a': 42}
