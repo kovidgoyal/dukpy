@@ -1,6 +1,6 @@
 #include "dukpy.h"
 
-duk_ret_t python_function_caller(duk_context *ctx)
+static duk_ret_t python_function_caller(duk_context *ctx)
 {
     PyObject *func, *args, *result;
     duk_idx_t nargs, i;
@@ -8,7 +8,7 @@ duk_ret_t python_function_caller(duk_context *ctx)
     nargs = duk_get_top(ctx);
 
     duk_push_current_function(ctx);
-    duk_get_prop_string(ctx, -1, "\xff" "py_func");
+    duk_get_prop_string(ctx, -1, "\xff" "py_object");
     func = duk_get_pointer(ctx, -1);
 
     args = PyTuple_New(nargs);
@@ -29,6 +29,23 @@ duk_ret_t python_function_caller(duk_context *ctx)
 
     python_to_duk(ctx, result);
     return 1;
+}
+
+static duk_ret_t python_object_decref(duk_context *ctx) {
+    int deleted = 0;
+    duk_get_prop_string(ctx, 0, "\xff""deleted");
+    deleted = duk_to_boolean(ctx, -1);
+    duk_pop(ctx);
+    if (!deleted) {
+        duk_get_prop_string(ctx, 0, "\xff""py_object");
+        Py_XDECREF(duk_get_pointer(ctx, -1));
+        duk_pop(ctx);
+
+        // Mark as deleted
+        duk_push_boolean(ctx, 1);
+        duk_put_prop_string(ctx, 0, "\xff""deleted");
+    }
+    return 0;
 }
 
 int python_to_duk(duk_context *ctx, PyObject *value)
@@ -146,9 +163,17 @@ int python_to_duk(duk_context *ctx, PyObject *value)
         }
     }
     else if (PyCallable_Check(value)) {
+        // Store the callable
         duk_push_c_function(ctx, python_function_caller, DUK_VARARGS);
         duk_push_pointer(ctx, value);
-        duk_put_prop_string(ctx, -2, "\xff" "py_func");
+        Py_INCREF(value);
+        duk_put_prop_string(ctx, -2, "\xff" "py_object");
+        // Store a boolean flag to mark the object as deleted because the destructor may be called several times
+        duk_push_boolean(ctx, 0);
+        duk_put_prop_string(ctx, -2, "\xff""deleted");
+        // Store the function destructor
+        duk_push_c_function(ctx, python_object_decref, 1);
+        duk_set_finalizer(ctx, -2);
     }
     else {
         PyObject *repr = PyObject_Repr(value);

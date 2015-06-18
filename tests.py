@@ -1,4 +1,5 @@
 import os
+import sys
 import unittest
 from dukpy import Context, undefined
 
@@ -73,8 +74,14 @@ class ValueTests(unittest.TestCase):
         self.assertEqual(len(self.g.value), 3)
 
     def test_callable(self):
-        self.g.func = lambda x: x * x
+        def f(x):
+            return x * x
+        num = sys.getrefcount(f)
+        self.g.func = f
+        self.assertEqual(sys.getrefcount(f), num + 1)
         self.assertEqual(self.g.func(123), 15129)
+        self.g.func = undefined
+        self.assertEqual(sys.getrefcount(f), num)
 
     def test_proxy(self):
         self.g.obj1 = {'a': 42}
