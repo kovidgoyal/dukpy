@@ -92,6 +92,13 @@ class ValueTests(unittest.TestCase):
         self.assertEqual(self.g.eval('func()'), a)
         self.assertEqual(sys.getrefcount(a), num)
 
+        def bad():
+            raise Exception('testing a python exception xyz')
+        self.g.func = bad
+        val = self.g.eval('try{func();}catch(err) {err.message}')
+        self.assertTrue('testing a python exception xyz' in val)
+        self.assertTrue('function bad at 0x' in val)
+
     def test_proxy(self):
         self.g.obj1 = {'a': 42}
         self.g.obj2 = self.g.obj1

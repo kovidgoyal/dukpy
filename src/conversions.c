@@ -1,9 +1,27 @@
 #include "dukpy.h"
 
+static int get_repr(PyObject *value, char *buf, int bufsz) {
+    PyObject *temp = NULL, *repr = NULL;
+    memset(buf, 0, bufsz);
+    
+    if (!value) return 0;
+    repr = PyObject_Repr(value);
+
+    if (repr && !PyBytes_Check(repr)) {
+        temp = PyUnicode_AsUTF8String(repr);
+        Py_DECREF(repr); repr = temp;
+    }
+    if (!repr) return 0;
+    strncpy(buf, PyBytes_AS_STRING(repr), bufsz - 1);
+    Py_DECREF(repr);
+    return 1;
+}
+
 static duk_ret_t python_function_caller(duk_context *ctx)
 {
     PyObject *func, *args, *result;
     duk_idx_t nargs, i;
+    static char buf1[200], buf2[1024];
 
     nargs = duk_get_top(ctx);
 
@@ -25,10 +43,19 @@ static duk_ret_t python_function_caller(duk_context *ctx)
 
     result = PyObject_Call(func, args, NULL);
     if (!result) {
-        duk_error(ctx, DUK_ERR_ERROR, "Function call failed");
-    } 
+        get_repr(func, buf1, 200);
+        if (!PyErr_Occurred())
+            duk_error(ctx, DUK_ERR_ERROR, "Python function (%s) failed", buf1);
+        PyObject *ptype = NULL, *pval = NULL, *tb = NULL;
+        PyErr_Fetch(&ptype, &pval, &tb);
+        if (!get_repr(pval, buf2, 1024)) get_repr(ptype, buf2, 1024);
+        Py_XDECREF(ptype); Py_XDECREF(pval); Py_XDECREF(tb);
+        PyErr_Clear();  /* In case there was an error in get_repr() */
+        duk_error(ctx, DUK_ERR_ERROR, "Python function (%s) failed with error: %s", buf1, buf2);
+
+    }
     python_to_duk(ctx, result);
-    Py_XDECREF(result);
+    Py_DECREF(result);
     return 1;
 }
 
@@ -58,6 +85,7 @@ int python_to_duk(duk_context *ctx, PyObject *value)
 #if PY_MAJOR_VERSION < 3
     int ret;
 #endif
+    static char buf[200];
 
     if (value == Duk_undefined) {
         duk_push_undefined(ctx);
@@ -177,18 +205,8 @@ int python_to_duk(duk_context *ctx, PyObject *value)
         duk_set_finalizer(ctx, -2);
     }
     else {
-        PyObject *repr = PyObject_Repr(value);
-        if (repr == NULL) return -1;
-        if (PyBytes_Check(repr)) 
-            PyErr_Format(PyExc_TypeError, "%s is not coercible", PyBytes_AS_STRING(repr));
-        else {
-            PyObject *brepr = PyUnicode_AsUTF8String(repr);
-            if (brepr != NULL) {
-                PyErr_Format(PyExc_TypeError, "%s is not coercible", PyBytes_AS_STRING(brepr));
-                Py_DECREF(brepr);
-            }
-        }
-        Py_DECREF(repr);
+        if(get_repr(value, buf, 200))
+            PyErr_Format(PyExc_TypeError, "%s is not coercible", buf);
         return -1;
     }
 
