@@ -35,13 +35,17 @@ static duk_ret_t python_function_caller(duk_context *ctx)
 
     for (i = 0; i < nargs; i++) {
         PyObject *arg = duk_to_python(ctx, i);
-        if (arg == NULL)
+        if (arg == NULL)  {
+            Py_DECREF(args);
             return DUK_RET_TYPE_ERROR;
+        }
 
         PyTuple_SET_ITEM(args, i, arg);
     }
 
     result = PyObject_Call(func, args, NULL);
+    Py_DECREF(args);
+
     if (!result) {
         get_repr(func, buf1, 200);
         if (!PyErr_Occurred())
