@@ -1,7 +1,7 @@
 import os
 import sys
 import unittest
-from dukpy import Context, undefined
+from dukpy import Context, undefined, JSError
 
 
 class ContextTests(unittest.TestCase):
@@ -129,8 +129,22 @@ class EvalTests(unittest.TestCase):
 
     def test_eval_kwargs(self):
         self.assertEqual(self.ctx.eval(code="1+1"), 2)
-        with self.assertRaises(SyntaxError):
+        try:
             self.ctx.eval('1+/1')
+            self.assert_('No error raised for malformed js')
+        except JSError as e:
+            e = e.args[0]
+            self.assertEqual('SyntaxError', e.name)
+            self.assertEqual(1, e.lineNumber)
+            self.assertIn('line 1', e.toString())
+
+        try:
+            self.ctx.eval('\na()')
+            self.assert_('No error raised for malformed js')
+        except JSError as e:
+            e = e.args[0]
+            self.assertEqual('ReferenceError', e.name)
+            self.assertEqual(2, e.lineNumber)
 
     def test_eval_noreturn(self):
         self.assertIsNone(self.ctx.eval("1+1", noreturn=True))
