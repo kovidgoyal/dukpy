@@ -24,6 +24,9 @@ class ContextTests(unittest.TestCase):
     def test_eval_file(self):
         pass
 
+    def test_undefined(self):
+        self.assertEqual(repr(undefined), 'undefined')
+
 
 class ValueTests(unittest.TestCase):
     def setUp(self):

@@ -1,5 +1,26 @@
 #include "dukpy.h"
 
+/* ARGSUSED */
+static PyObject *
+undefined_repr(PyObject *op)
+{
+#if PY_MAJOR_VERSION < 3
+    return PyBytes_FromString("undefined");
+#else
+    return PyUnicode_FromString("undefined");
+#endif
+}
+
+/* ARGUSED */
+static void
+undefined_dealloc(PyObject* ignore)
+{   
+    /* This should never get called, but we also don't want to SEGV if
+     * we accidentally decref undef out of existence.
+     */
+    Py_FatalError("deallocating undefined");
+}
+
 static PyTypeObject DukUndefined_Type = {
 #if PY_MAJOR_VERSION < 3
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -7,7 +28,17 @@ static PyTypeObject DukUndefined_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
 #endif
     "UndefinedType",
-    0, 0
+    0,
+    0,
+    undefined_dealloc,
+    0,                  /*tp_print*/
+    0,                  /*tp_getattr*/
+    0,                  /*tp_setattr*/
+    0,                  /*tp_compare*/
+    undefined_repr,     /*tp_repr*/
+    0,                  /*tp_as_number*/
+    0,                  /*tp_as_sequence*/
+    0,                  /*tp_as_mapping*/
 };
 
 PyObject DukUndefined = {
