@@ -83,6 +83,15 @@ class ValueTests(unittest.TestCase):
         self.g.func = undefined
         self.assertEqual(sys.getrefcount(f), num)
 
+        a = 13450234
+
+        def rval():
+            return a
+        num = sys.getrefcount(a)
+        self.g.func = rval
+        self.assertEqual(self.g.eval('func()'), a)
+        self.assertEqual(sys.getrefcount(a), num)
+
     def test_proxy(self):
         self.g.obj1 = {'a': 42}
         self.g.obj2 = self.g.obj1

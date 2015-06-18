@@ -24,10 +24,11 @@ static duk_ret_t python_function_caller(duk_context *ctx)
     }
 
     result = PyObject_Call(func, args, NULL);
-    if (!result)
+    if (!result) {
         duk_error(ctx, DUK_ERR_ERROR, "Function call failed");
-
+    } 
     python_to_duk(ctx, result);
+    Py_XDECREF(result);
     return 1;
 }
 
