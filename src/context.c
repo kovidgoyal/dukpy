@@ -88,13 +88,14 @@ static PyObject *DukContext_eval(DukContext *self, PyObject *args, PyObject *kw)
 {
     const char *code;
     int noresult = 0;
-    PyObject *result = NULL;
+    PyObject *result = NULL, *temp = NULL;
 
     static char *keywords[] = {"code", "noreturn", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "s|$p:eval", keywords,
-                                     &code, &noresult)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "s|O:eval", keywords, 
+                &code, &temp)) {
         return NULL;
     }
+    if (temp && PyObject_IsTrue(temp)) noresult = 1;
 
     if (duk_peval_string(self->ctx, code) != 0) {
         PyErr_Format(PyExc_RuntimeError,
@@ -118,13 +119,14 @@ static PyObject *DukContext_eval_file(DukContext *self, PyObject *args, PyObject
 {
     const char *path;
     int noresult = 0;
-    PyObject *result = NULL;
+    PyObject *result = NULL, *temp = NULL;
 
     static char *keywords[] = {"path", "noreturn", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "s|$p:eval", keywords,
-                                     &path, &noresult)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "s|O:eval_file", keywords, 
+                &path, &temp)) {
         return NULL;
     }
+    if (temp && PyObject_IsTrue(temp)) noresult = 1;
 
     if (duk_peval_file(self->ctx, path) != 0) {
         PyErr_Format(PyExc_RuntimeError,

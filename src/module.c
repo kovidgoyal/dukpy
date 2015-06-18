@@ -12,7 +12,7 @@ PyObject DukUndefined = {
   1, &DukUndefined_Type
 };
 
-
+#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
     "dukpy",  /* m_name */
@@ -24,8 +24,14 @@ static struct PyModuleDef moduledef = {
     NULL,       /* m_clear */
     NULL        /* m_free */
 };
+#endif
 
-PyObject *PyInit_dukpy(void)
+PyMODINIT_FUNC
+#if PY_MAJOR_VERSION >= 3
+PyInit_dukpy(void)
+#else 
+initdukpy(void)
+#endif
 {
     PyObject *mod;
 
@@ -49,7 +55,11 @@ PyObject *PyInit_dukpy(void)
     if (PyType_Ready(&DukEnum_Type) < 0)
         return NULL;
 
+#if PY_MAJOR_VERSION >= 3
     mod = PyModule_Create(&moduledef);
+#else
+    mod = Py_InitModule3("dukpy", NULL, "Python bindings for duktape");
+#endif
     if (mod == NULL)
         return NULL;
 
@@ -59,5 +69,7 @@ PyObject *PyInit_dukpy(void)
     Py_INCREF(Duk_undefined);
     PyModule_AddObject(mod, "undefined", (PyObject *)Duk_undefined);
 
+#if PY_MAJOR_VERSION >= 3
     return mod;
+#endif
 }

@@ -56,15 +56,33 @@ int python_to_duk(duk_context *ctx, PyObject *value)
     }
     else if (PyUnicode_Check(value)) {
         /* Unicode string */
+#ifdef PyUnicode_AsUTF8AndSize
         char *str;
         Py_ssize_t len;
-
         str = PyUnicode_AsUTF8AndSize(value, &len);
         if (str == NULL)
             return -1;
 
         duk_push_lstring(ctx, str, len);
+#else
+        PyObject *utf8str = PyUnicode_AsUTF8String(value);
+        if (utf8str == NULL)
+            return -1;
+        duk_push_lstring(ctx, PyBytes_AS_STRING(utf8str), PyBytes_GET_SIZE(utf8str));
+        Py_DECREF(utf8str);
+#endif
     }
+#if PY_MAJOR_VERSION < 3
+    else if (PyBytes_Check(value)) {
+        /* Happens in python 2 for attribute access, for example*/
+        PyObject *urepr = PyUnicode_FromObject(value);
+        if (urepr == NULL) 
+            return -1;
+        int ret = python_to_duk(ctx, urepr);
+        Py_DECREF(urepr);
+        return ret;
+    }
+#endif
     else if (PyLong_Check(value)) {
         double val =  PyLong_AsDouble(value);
         if (PyErr_Occurred())
@@ -72,6 +90,12 @@ int python_to_duk(duk_context *ctx, PyObject *value)
 
         duk_push_number(ctx, val);
     }
+#if PY_MAJOR_VERSION < 3
+    else if (PyInt_Check(value)) {
+        double val = (double)PyInt_AsLong(value);
+        duk_push_number(ctx, val);
+    }
+#endif
     else if (PyFloat_Check(value)) {
         double val =  PyFloat_AsDouble(value);
         if (PyErr_Occurred())
@@ -124,7 +148,18 @@ int python_to_duk(duk_context *ctx, PyObject *value)
         duk_put_prop_string(ctx, -2, "\xff" "py_func");
     }
     else {
-        PyErr_Format(PyExc_TypeError, "%S is not coercible", Py_TYPE(value));
+        PyObject *repr = PyObject_Repr(value);
+        if (repr == NULL) return -1;
+        if (PyBytes_Check(repr)) 
+            PyErr_Format(PyExc_TypeError, "%s is not coercible", PyBytes_AS_STRING(repr));
+        else {
+            PyObject *brepr = PyUnicode_AsUTF8String(repr);
+            if (brepr != NULL) {
+                PyErr_Format(PyExc_TypeError, "%s is not coercible", PyBytes_AS_STRING(brepr));
+                Py_DECREF(brepr);
+            }
+        }
+        Py_DECREF(repr);
         return -1;
     }
 
