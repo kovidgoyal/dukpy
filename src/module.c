@@ -1,14 +1,14 @@
 #include "dukpy.h"
 
 
-PyTypeObject DukUndefined_Type = {
+static PyTypeObject DukUndefined_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
     "Undefined",
     0, 0
 };
 
 PyObject DukUndefined = {
-  _PyObject_EXTRA_INIT
+    _PyObject_EXTRA_INIT
   1, &DukUndefined_Type
 };
 
@@ -37,37 +37,56 @@ initdukpy(void)
 
     DukContext_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&DukContext_Type) < 0)
+#if PY_MAJOR_VERSION >= 3
         return NULL;
+#else
+        return;
+#endif
 
     DukObject_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&DukObject_Type) < 0)
+#if PY_MAJOR_VERSION >= 3
         return NULL;
+#else
+        return;
+#endif
 
     DukArray_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&DukArray_Type) < 0)
+#if PY_MAJOR_VERSION >= 3
         return NULL;
+#else
+        return;
+#endif
 
     DukFunction_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&DukFunction_Type) < 0)
+#if PY_MAJOR_VERSION >= 3
         return NULL;
+#else
+        return;
+#endif
 
     DukEnum_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&DukEnum_Type) < 0)
+#if PY_MAJOR_VERSION >= 3
         return NULL;
+#else
+        return;
+#endif
 
 #if PY_MAJOR_VERSION >= 3
     mod = PyModule_Create(&moduledef);
 #else
     mod = Py_InitModule3("dukpy", NULL, "Python bindings for duktape");
 #endif
-    if (mod == NULL)
-        return NULL;
+    if (mod != NULL) {
+        Py_INCREF(&DukContext_Type);
+        PyModule_AddObject(mod, "Context", (PyObject *)&DukContext_Type);
 
-    Py_INCREF(&DukContext_Type);
-    PyModule_AddObject(mod, "Context", (PyObject *)&DukContext_Type);
-
-    Py_INCREF(Duk_undefined);
-    PyModule_AddObject(mod, "undefined", (PyObject *)Duk_undefined);
+        Py_INCREF(Duk_undefined);
+        PyModule_AddObject(mod, "undefined", (PyObject *)Duk_undefined);
+    }
 
 #if PY_MAJOR_VERSION >= 3
     return mod;
