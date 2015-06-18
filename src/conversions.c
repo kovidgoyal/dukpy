@@ -37,6 +37,9 @@ int python_to_duk(duk_context *ctx, PyObject *value)
        converted value on the top of the stack and returns 0.
        Otherwise, raises a Python exception and returns -1.
     */
+#if PY_MAJOR_VERSION < 3
+    int ret;
+#endif
 
     if (value == Duk_undefined) {
         duk_push_undefined(ctx);
@@ -78,7 +81,7 @@ int python_to_duk(duk_context *ctx, PyObject *value)
         PyObject *urepr = PyUnicode_FromObject(value);
         if (urepr == NULL) 
             return -1;
-        int ret = python_to_duk(ctx, urepr);
+        ret = python_to_duk(ctx, urepr);
         Py_DECREF(urepr);
         return ret;
     }
@@ -139,7 +142,7 @@ int python_to_duk(duk_context *ctx, PyObject *value)
                 duk_pop(ctx);
                 return -1;
             }
-            duk_put_prop_index(ctx, -2, i);
+            duk_put_prop_index(ctx, -2, (duk_uarridx_t)i);
         }
     }
     else if (PyCallable_Check(value)) {

@@ -1,9 +1,12 @@
 #include "dukpy.h"
 
-
 static PyTypeObject DukUndefined_Type = {
+#if PY_MAJOR_VERSION < 3
+    PyVarObject_HEAD_INIT(NULL, 0)
+#else
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "Undefined",
+#endif
+    "UndefinedType",
     0, 0
 };
 
@@ -11,6 +14,7 @@ PyObject DukUndefined = {
     _PyObject_EXTRA_INIT
   1, &DukUndefined_Type
 };
+
 
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef moduledef = {
@@ -34,6 +38,16 @@ initdukpy(void)
 #endif
 {
     PyObject *mod;
+
+#if PY_MAJOR_VERSION < 3
+    DukUndefined_Type.ob_type = &PyType_Type;
+#endif
+    if (PyType_Ready(&DukUndefined_Type) < 0)
+#if PY_MAJOR_VERSION >= 3
+        return NULL;
+#else
+        return;
+#endif
 
     DukContext_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&DukContext_Type) < 0)
