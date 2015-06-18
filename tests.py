@@ -129,6 +129,8 @@ class EvalTests(unittest.TestCase):
 
     def test_eval_kwargs(self):
         self.assertEqual(self.ctx.eval(code="1+1"), 2)
+
+    def test_eval_errors(self):
         try:
             self.ctx.eval('1+/1')
             self.assert_('No error raised for malformed js')
