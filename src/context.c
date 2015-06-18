@@ -98,8 +98,7 @@ static PyObject *DukContext_eval(DukContext *self, PyObject *args, PyObject *kw)
     if (temp && PyObject_IsTrue(temp)) noresult = 1;
 
     if (duk_peval_string(self->ctx, code) != 0) {
-        PyErr_Format(PyExc_RuntimeError,
-                     "Failed to evaluate code: %s",
+        PyErr_Format(PyExc_SyntaxError, "%s",
                      duk_safe_to_string(self->ctx, -1));
         return NULL;
     }
@@ -129,9 +128,8 @@ static PyObject *DukContext_eval_file(DukContext *self, PyObject *args, PyObject
     if (temp && PyObject_IsTrue(temp)) noresult = 1;
 
     if (duk_peval_file(self->ctx, path) != 0) {
-        PyErr_Format(PyExc_RuntimeError,
-                     "Failed to evaluate file %s: %s",
-                     path, duk_safe_to_string(self->ctx, -1));
+        PyErr_Format(PyExc_SyntaxError,
+                     "%s:%s", path, duk_safe_to_string(self->ctx, -1));
         return NULL;
     }
 

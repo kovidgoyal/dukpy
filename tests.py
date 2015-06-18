@@ -129,6 +129,8 @@ class EvalTests(unittest.TestCase):
 
     def test_eval_kwargs(self):
         self.assertEqual(self.ctx.eval(code="1+1"), 2)
+        with self.assertRaises(SyntaxError):
+            self.ctx.eval('1+/1')
 
     def test_eval_noreturn(self):
         self.assertIsNone(self.ctx.eval("1+1", noreturn=True))
