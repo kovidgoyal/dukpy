@@ -100,6 +100,7 @@ static PyObject *DukContext_eval(DukContext *self, PyObject *args, PyObject *kw)
     if (duk_peval_string(self->ctx, code) != 0) {
         PyErr_Format(PyExc_SyntaxError, "%s",
                      duk_safe_to_string(self->ctx, -1));
+        duk_pop(self->ctx);
         return NULL;
     }
 
@@ -130,6 +131,7 @@ static PyObject *DukContext_eval_file(DukContext *self, PyObject *args, PyObject
     if (duk_peval_file(self->ctx, path) != 0) {
         PyErr_Format(PyExc_SyntaxError,
                      "%s:%s", path, duk_safe_to_string(self->ctx, -1));
+        duk_pop(self->ctx);
         return NULL;
     }
 
