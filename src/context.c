@@ -18,6 +18,7 @@ static int DukContext_init(DukContext *self, PyObject *args, PyObject *kw)
     (void)kw;
 
     self->heap_manager = NULL;  /* We manage the heap */
+    self->py_thread_state = NULL;
 
     self->ctx = duk_create_heap_default();
     if (!self->ctx) {
@@ -86,25 +87,34 @@ static void DukContext_dealloc(DukContext *self)
 
 static PyObject *DukContext_eval(DukContext *self, PyObject *args, PyObject *kw)
 {
-    const char *code;
-    int noresult = 0;
-    PyObject *result = NULL;
+    const char *code, *fname = "<eval>";
+    int noresult = 0, ret = 0;
+    PyObject *result = NULL, *temp = NULL;
 
-    static char *keywords[] = {"code", "noreturn", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "s|$p:eval", keywords,
-                                     &code, &noresult)) {
+    static char *keywords[] = {"code", "noreturn", "fname", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "s|Os:eval", keywords, 
+                &code, &temp, &fname)) {
         return NULL;
     }
+    if (temp && PyObject_IsTrue(temp)) noresult = 1;
 
-    if (duk_peval_string(self->ctx, code) != 0) {
-        PyErr_Format(PyExc_RuntimeError,
-                     "Failed to evaluate code: %s",
-                     duk_safe_to_string(self->ctx, -1));
+    self->py_thread_state = PyEval_SaveThread();  // Release GIL
+    ret = DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN | ((noresult) ? DUK_COMPILE_NORESULT : 0);
+    duk_push_string(self->ctx, fname);
+	ret = duk_eval_raw(self->ctx, code, 0, ret);
+    PyEval_RestoreThread(self->py_thread_state);  // Acquire GIL
+    self->py_thread_state = NULL;  
+    if (ret != 0) {
+        temp = duk_to_python(self->ctx, -1);
+        duk_pop(self->ctx);
+        if (temp) {
+            PyErr_SetObject(JSError, temp);
+            Py_DECREF(temp);
+        } else PyErr_SetString(PyExc_RuntimeError, "The was an error during eval(), but the error could not be read of the stack");
         return NULL;
     }
 
     if (noresult) {
-        duk_pop(self->ctx);
         Py_RETURN_NONE;
     }
 
@@ -117,24 +127,31 @@ static PyObject *DukContext_eval(DukContext *self, PyObject *args, PyObject *kw)
 static PyObject *DukContext_eval_file(DukContext *self, PyObject *args, PyObject *kw)
 {
     const char *path;
-    int noresult = 0;
-    PyObject *result = NULL;
+    int noresult = 0, ret = 0;
+    PyObject *result = NULL, *temp = NULL;
 
     static char *keywords[] = {"path", "noreturn", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "s|$p:eval", keywords,
-                                     &path, &noresult)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "s|O:eval_file", keywords, 
+                &path, &temp)) {
         return NULL;
     }
+    if (temp && PyObject_IsTrue(temp)) noresult = 1;
 
-    if (duk_peval_file(self->ctx, path) != 0) {
-        PyErr_Format(PyExc_RuntimeError,
-                     "Failed to evaluate file %s: %s",
-                     path, duk_safe_to_string(self->ctx, -1));
+    self->py_thread_state = PyEval_SaveThread();  // Release GIL
+    ret = (noresult) ? duk_peval_file_noresult(self->ctx, path) : duk_peval_file(self->ctx, path);
+    PyEval_RestoreThread(self->py_thread_state);  // Acquire GIL
+    self->py_thread_state = NULL;  
+    if (ret != 0) {
+        temp = duk_to_python(self->ctx, -1);
+        duk_pop(self->ctx);
+        if (temp) {
+            PyErr_SetObject(JSError, temp);
+            Py_DECREF(temp);
+        } else PyErr_SetString(PyExc_RuntimeError, "The was an error during eval_file(), but the error could not be read of the stack");
         return NULL;
     }
 
     if (noresult) {
-        duk_pop(self->ctx);
         Py_RETURN_NONE;
     }
 

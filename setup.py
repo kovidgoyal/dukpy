@@ -16,19 +16,19 @@ setup(
     long_description=read('README.md'),
     ext_modules=[
         Extension('dukpy', sources=[
-            'src/duktape/duktape.c',
             'src/context.c',
             'src/conversions.c',
             'src/proxy.c',
             'src/module.c',
+            'src/duktape/duktape.c',
         ]),
     ],
     test_suite='tests',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: JavaScript',
     ],
 )

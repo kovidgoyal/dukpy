@@ -1,9 +1,12 @@
 import os
+import sys
 import unittest
-from dukpy import Context, undefined
+from threading import Thread, Event
+from dukpy import Context, undefined, JSError
 
 
 class ContextTests(unittest.TestCase):
+
     def setUp(self):
         self.ctx = Context()
         self.g = self.ctx.g
@@ -24,8 +27,12 @@ class ContextTests(unittest.TestCase):
     def test_eval_file(self):
         pass
 
+    def test_undefined(self):
+        self.assertEqual(repr(undefined), 'undefined')
+
 
 class ValueTests(unittest.TestCase):
+
     def setUp(self):
         self.ctx = Context()
         self.g = self.ctx.g
@@ -70,8 +77,30 @@ class ValueTests(unittest.TestCase):
         self.assertEqual(len(self.g.value), 3)
 
     def test_callable(self):
-        self.g.func = lambda x: x * x
+        def f(x):
+            return x * x
+        num = sys.getrefcount(f)
+        self.g.func = f
+        self.assertEqual(sys.getrefcount(f), num + 1)
         self.assertEqual(self.g.func(123), 15129)
+        self.g.func = undefined
+        self.assertEqual(sys.getrefcount(f), num)
+
+        a = 13450234
+
+        def rval():
+            return a
+        num = sys.getrefcount(a)
+        self.g.func = rval
+        self.assertEqual(self.g.eval('func()'), a)
+        self.assertEqual(sys.getrefcount(a), num)
+
+        def bad():
+            raise Exception('testing a python exception xyz')
+        self.g.func = bad
+        val = self.g.eval('try{func();}catch(err) {err.message}')
+        self.assertTrue('testing a python exception xyz' in val)
+        self.assertTrue('bad at 0x' in val)
 
     def test_proxy(self):
         self.g.obj1 = {'a': 42}
@@ -80,6 +109,7 @@ class ValueTests(unittest.TestCase):
 
 
 class EvalTests(unittest.TestCase):
+
     def setUp(self):
         self.ctx = Context()
         self.g = self.ctx.g
@@ -103,6 +133,38 @@ class EvalTests(unittest.TestCase):
 
     def test_eval_kwargs(self):
         self.assertEqual(self.ctx.eval(code="1+1"), 2)
+
+    def test_eval_errors(self):
+        try:
+            self.ctx.eval('1+/1')
+            self.assert_('No error raised for malformed js')
+        except JSError as e:
+            e = e.args[0]
+            self.assertEqual('SyntaxError', e.name)
+            self.assertEqual('<eval>', e.fileName)
+            self.assertEqual(1, e.lineNumber)
+            self.assertIn('line 1', e.toString())
+
+        try:
+            self.ctx.eval('\na()', fname='xxx')
+            self.assert_('No error raised for malformed js')
+        except JSError as e:
+            e = e.args[0]
+            self.assertEqual('ReferenceError', e.name)
+            self.assertEqual('xxx', e.fileName)
+            self.assertEqual(2, e.lineNumber)
+
+    def test_eval_multithreading(self):
+        ev = Event()
+        self.ctx.g.func = ev.wait
+        t = Thread(target=self.ctx.eval, args=('func()',))
+        t.daemon = True
+        t.start()
+        t.join(0.01)
+        self.assertTrue(t.is_alive())
+        ev.set()
+        t.join(1)
+        self.assertFalse(t.is_alive())
 
     def test_eval_noreturn(self):
         self.assertIsNone(self.ctx.eval("1+1", noreturn=True))

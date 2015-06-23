@@ -271,7 +271,7 @@ static PyObject *DukArray_getitem(DukObject *self, Py_ssize_t i)
     PyObject *result;
 
     PUSH(self);
-    duk_get_prop_index(ctx, -1, i);
+    duk_get_prop_index(ctx, -1, (duk_uarridx_t)i);
 
     result = duk_to_python(ctx, -1);
     if (!result)
@@ -301,14 +301,14 @@ static int DukArray_setitem(DukObject *self, Py_ssize_t i, PyObject *value)
             duk_pop(ctx);
             return -1;
         }
-        duk_put_prop_index(ctx, -2, i);
+        duk_put_prop_index(ctx, -2, (duk_uarridx_t)i);
     } else {
         /* del self[i]
 
            Note that this always succeeds, even if the index doesn't
            exist.
         */
-        duk_del_prop_index(ctx, -1, i);
+        duk_del_prop_index(ctx, -1, (duk_uarridx_t)i);
         duk_pop(ctx);
     }
 
@@ -429,15 +429,15 @@ PyObject* DukFunction_call(DukObject *self, PyObject *args, PyObject *kw)
     for (i = 0; i < nargs; i++) {
         PyObject *arg = PyTuple_GetItem(args, i);
         if (python_to_duk(ctx, arg) == -1) {
-            duk_pop_n(ctx, 1 + (this ? 1 : 0) + i);
+            duk_pop_n(ctx, 1 + (this ? 1 : 0) + (duk_idx_t)i);
             return NULL;
         }
     }
 
     if (this)
-        duk_call_method(ctx, nargs);
+        duk_call_method(ctx, (duk_idx_t)nargs);
     else
-        duk_call(ctx, nargs);
+        duk_call(ctx, (duk_idx_t)nargs);
 
     if (return_none) {
         /* Always return None. This saves converting the function's
