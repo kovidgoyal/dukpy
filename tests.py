@@ -30,6 +30,12 @@ class ContextTests(unittest.TestCase):
     def test_undefined(self):
         self.assertEqual(repr(undefined), 'undefined')
 
+    def test_roundtrip(self):
+        self.g.g = self.ctx.eval('function f() {return 1;}; f')
+        self.assertEqual(self.g.g.name, 'f')
+        self.g.a = self.ctx.eval('[1,2,3]')
+        self.assertEqual(self.g.a[2], 3)
+
 
 class ValueTests(unittest.TestCase):
 
