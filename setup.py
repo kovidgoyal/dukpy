@@ -16,6 +16,7 @@ setup(
     long_description=read('README.md'),
     ext_modules=[
         Extension('dukpy', sources=[
+            'src/errors.c',
             'src/context.c',
             'src/conversions.c',
             'src/proxy.c',

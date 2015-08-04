@@ -450,7 +450,7 @@ PyObject* DukFunction_call(DukObject *self, PyObject *args, PyObject *kw)
         temp = duk_to_python(ctx, -1);
         duk_pop(ctx);
         if (temp) {
-            PyErr_SetObject(JSError, temp);
+            set_dukpy_error(temp);
             Py_DECREF(temp);
         } else PyErr_SetString(PyExc_RuntimeError, "The was an error during call(), but the error could not be read of the stack");
         return NULL;
