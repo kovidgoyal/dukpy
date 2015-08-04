@@ -8,11 +8,11 @@ def read(fname):
 
 setup(
     name='dukpy',
-    version='0.1',
-    author='Petri Lehtinen',
-    author_email='petri@digip.org',
+    version='0.2',
+    author='Kovid Goyal',
+    author_email='kovid@kovidgoyal.net',
     description='JavaScript runtime environment for Python',
-    url='https://github.com/akheron/dukpy',
+    url='https://github.com/kovidgoyal/dukpy',
     long_description=read('README.md'),
     ext_modules=[
         Extension('dukpy', sources=[
@@ -25,7 +25,7 @@ setup(
     ],
     test_suite='tests',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 2.7',
