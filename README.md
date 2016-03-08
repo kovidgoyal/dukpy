@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.org/kovidgoyal/dukpy.svg?branch=master)](https://travis-ci.org/kovidgoyal/dukpy) [![Coverage Status](https://coveralls.io/repos/kovidgoyal/dukpy/badge.svg?branch=master&service=github)](https://coveralls.io/github/kovidgoyal/dukpy?branch=master)
 
-Dukpy is a JavaScript runtime environment for Python using the
-[duktape](http://duktape.org/) embeddable JavaScript engine. With
-dukpy, you can run JavaScript in Python.
+Dukpy is a JavaScript runtime environment for Python (tested with python 2.7
+and >= 3.4) using the [duktape](http://duktape.org/) embeddable JavaScript
+engine. With dukpy, you can run JavaScript in Python.
 
 Example:
 ```python
