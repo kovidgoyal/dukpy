@@ -1,9 +1,4 @@
-import os
 from setuptools import setup, Extension
-
-
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
 setup(
@@ -13,7 +8,6 @@ setup(
     author_email='kovid@kovidgoyal.net',
     description='JavaScript runtime environment for Python',
     url='https://github.com/kovidgoyal/dukpy',
-    long_description=read('README.md'),
     ext_modules=[
         Extension('dukpy', sources=[
             'src/errors.c',
