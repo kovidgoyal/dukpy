@@ -7,3 +7,4 @@ install: pip install cpp-coveralls
 script: CFLAGS="--coverage -DDUK_OPT_ASSERTIONS" python setup.py test
 after_success:
   - coveralls -E '.*/src/duktape'
+sudo: false
