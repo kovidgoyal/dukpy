@@ -24,11 +24,7 @@ undefined_dealloc(PyObject* ignore)
 }
 
 static PyTypeObject DukUndefined_Type = {
-#if PY_MAJOR_VERSION < 3
     PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-#endif
     "UndefinedType",
     0,
     0,

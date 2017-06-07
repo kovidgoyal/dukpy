@@ -1,7 +1,9 @@
-#ifndef DUKPY_H
-#define DUKPY_H
-
+#pragma once
+#ifdef _MSC_VER
+#include <windows.h>
+#endif
 #include <Python.h>
+
 #include "duktape/duktape.h"
 #include "duktape/duk_v1_compat.h"
 #include "duktape/duk_module_duktape.h"
@@ -73,5 +75,3 @@ int python_to_duk(duk_context *ctx, PyObject *value);
 PyObject *duk_to_python(duk_context *ctx, duk_idx_t index);
 
 void set_dukpy_error(PyObject *obj);
-
-#endif /* DUKPY_H */

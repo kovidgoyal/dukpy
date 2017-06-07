@@ -1,0 +1,29 @@
+os: Visual Studio 2015
+
+platform:
+    - x64
+    - x86
+
+cache:
+    - sw -> win-ci.py
+
+environment:
+    matrix:
+        - PY: 36
+
+
+build_script:
+    - ps: |
+        If ($env:Platform -Match "x86") {
+            $env:VCVARS_PLATFORM="x86"
+            $env:PYTHON="C:/Python$env:PY"
+        } Else {
+            $env:VCVARS_PLATFORM="amd64"
+            $env:PYTHON="C:/Python$env:PY-x64"
+        }
+    - call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %VCVARS_PLATFORM%
+    - set PATH=%PYTHON%;%PATH%
+    - python -c "import sys; print(sys.version_info); import platform; print(platform.architecture())"
+
+test_script:
+    - python.exe setup.py test
