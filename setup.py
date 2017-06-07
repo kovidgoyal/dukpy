@@ -1,5 +1,8 @@
 from setuptools import setup, Extension
-
+import sys
+cflags = []
+if not hasattr(sys, 'getwindowsversion'):
+    cflags.append('-fvisibility=hidden')
 
 setup(
     name='dukpy',
@@ -9,14 +12,17 @@ setup(
     description='JavaScript runtime environment for Python',
     url='https://github.com/kovidgoyal/dukpy',
     ext_modules=[
-        Extension('dukpy', sources=[
-            'src/errors.c',
-            'src/context.c',
-            'src/conversions.c',
-            'src/proxy.c',
-            'src/module.c',
-            'src/duktape/duktape.c',
-        ]),
+        Extension(
+            'dukpy',
+            sources=[
+                'src/errors.c',
+                'src/context.c',
+                'src/conversions.c',
+                'src/proxy.c',
+                'src/module.c',
+                'src/duktape/duktape.c',
+            ],
+            extra_compile_args=cflags),
     ],
     test_suite='tests',
     classifiers=[
@@ -26,5 +32,4 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: JavaScript',
-    ],
-)
+    ], )
