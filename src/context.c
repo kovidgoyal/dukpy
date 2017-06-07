@@ -33,6 +33,7 @@ static int DukContext_init(DukContext *self, PyObject *args, PyObject *kw)
     duk_pop(self->ctx);
 
     DukContext_init_internal(self);
+    duk_module_duktape_init(self->ctx);
 
     return 0;
 }

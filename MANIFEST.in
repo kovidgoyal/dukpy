@@ -1,0 +1,5 @@
+include src/*.c
+include src/*.h
+include src/duktape/*.c
+include src/duktape/*.h
+include setup.py tests.py

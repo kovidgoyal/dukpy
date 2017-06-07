@@ -1,8 +1,14 @@
-from setuptools import setup, Extension
+#!/usr/bin/env python
+import glob
 import sys
+
+from setuptools import Extension, setup
+
 cflags = []
 if not hasattr(sys, 'getwindowsversion'):
     cflags.append('-fvisibility=hidden')
+
+sources = glob.glob('src/*.c') + glob.glob('src/duktape/*.c')
 
 setup(
     name='dukpy',
@@ -12,17 +18,7 @@ setup(
     description='JavaScript runtime environment for Python',
     url='https://github.com/kovidgoyal/dukpy',
     ext_modules=[
-        Extension(
-            'dukpy',
-            sources=[
-                'src/errors.c',
-                'src/context.c',
-                'src/conversions.c',
-                'src/proxy.c',
-                'src/module.c',
-                'src/duktape/duktape.c',
-            ],
-            extra_compile_args=cflags),
+        Extension('dukpy', sources=sources, extra_compile_args=cflags),
     ],
     test_suite='tests',
     classifiers=[

@@ -3,6 +3,8 @@
 
 #include <Python.h>
 #include "duktape/duktape.h"
+#include "duktape/duk_v1_compat.h"
+#include "duktape/duk_module_duktape.h"
 
 typedef struct DukContext_ DukContext;
 typedef struct DukObject_ DukObject;

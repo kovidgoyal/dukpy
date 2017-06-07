@@ -41,7 +41,7 @@ static duk_ret_t python_function_caller(duk_context *ctx)
 
     args = PyTuple_New(nargs);
     if (!args) {
-        ret = DUK_RET_ALLOC_ERROR;
+        ret = DUK_RET_ERROR;
         goto error;
     }
 
