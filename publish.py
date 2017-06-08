@@ -50,6 +50,7 @@ def sign_release():
 
 
 def tag_release():
+    run('git push')
     run('git tag -s "v{0}" -m "version-{0}"'.format(VERSION))
     run('git push origin "v{0}"'.format(VERSION))
 
