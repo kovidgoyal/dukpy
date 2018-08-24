@@ -63,23 +63,23 @@ static duk_ret_t python_function_caller(duk_context *ctx)
         err_occured = PyErr_Occurred() != NULL;
         get_repr(func, buf1, 200);
         if (!err_occured) {
+            get_repr(func, buf1, 200);
             if (gil_acquired) {
                 dctx->py_thread_state = PyEval_SaveThread();
                 gil_acquired = 0;
             }
-            get_repr(func, buf1, 200);
-            duk_error(ctx, DUK_ERR_ERROR, "Function (%s) failed", buf1);
+            return duk_error(ctx, DUK_ERR_ERROR, "Function (%s) failed", buf1);
         }
         PyErr_Fetch(&ptype, &pval, &tb);
         if (!get_repr(pval, buf2, 1024)) get_repr(ptype, buf2, 1024);
         Py_XDECREF(ptype); Py_XDECREF(pval); Py_XDECREF(tb);
         PyErr_Clear();  /* In case there was an error in get_repr() */
+        get_repr(func, buf1, 200);
         if (gil_acquired) {
             dctx->py_thread_state = PyEval_SaveThread();
             gil_acquired = 0;
         }
-        get_repr(func, buf1, 200);
-        duk_error(ctx, DUK_ERR_ERROR, "Function (%s) failed with error: %s", buf1, buf2);
+        return duk_error(ctx, DUK_ERR_ERROR, "Function (%s) failed with error: %s", buf1, buf2);
 
     }
     python_to_duk(ctx, result);

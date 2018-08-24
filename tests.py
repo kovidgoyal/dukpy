@@ -28,6 +28,21 @@ class ContextTests(unittest.TestCase):
     def test_eval_file(self):
         pass
 
+    def test_pyfunc_success(self):
+        self.g.foo = lambda x: 213 + x
+        result = self.ctx.eval('foo(3)')
+        self.assertEqual(result, 213 + 3)
+
+    def test_pyfunc_exception(self):
+        def throw_exception():
+            raise ValueError('failure!')
+
+        self.g.throw_exception = throw_exception
+        with self.assertRaises(JSError) as err_ctx:
+            self.ctx.eval('throw_exception()')
+        self.assertIn("ValueError('failure!'",
+            err_ctx.exception.args[0]['message'])
+
     def test_undefined(self):
         self.assertEqual(repr(undefined), 'undefined')
 
