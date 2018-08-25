@@ -64,8 +64,10 @@ __attribute__ ((visibility ("default")))
 #endif
 PyMODINIT_FUNC
 #if PY_MAJOR_VERSION >= 3
+#define INITERROR return NULL
 PyInit_dukpy(void)
-#else 
+#else
+#define INITERROR return
 initdukpy(void)
 #endif
 {
@@ -75,51 +77,27 @@ initdukpy(void)
     DukUndefined_Type.ob_type = &PyType_Type;
 #endif
     if (PyType_Ready(&DukUndefined_Type) < 0)
-#if PY_MAJOR_VERSION >= 3
-        return NULL;
-#else
-        return;
-#endif
+        INITERROR;
 
     DukContext_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&DukContext_Type) < 0)
-#if PY_MAJOR_VERSION >= 3
-        return NULL;
-#else
-        return;
-#endif
+        INITERROR;
 
     DukObject_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&DukObject_Type) < 0)
-#if PY_MAJOR_VERSION >= 3
-        return NULL;
-#else
-        return;
-#endif
+        INITERROR;
 
     DukArray_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&DukArray_Type) < 0)
-#if PY_MAJOR_VERSION >= 3
-        return NULL;
-#else
-        return;
-#endif
+        INITERROR;
 
     DukFunction_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&DukFunction_Type) < 0)
-#if PY_MAJOR_VERSION >= 3
-        return NULL;
-#else
-        return;
-#endif
+        INITERROR;
 
     DukEnum_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&DukEnum_Type) < 0)
-#if PY_MAJOR_VERSION >= 3
-        return NULL;
-#else
-        return;
-#endif
+        INITERROR;
 
 #if PY_MAJOR_VERSION >= 3
     mod = PyModule_Create(&moduledef);
