@@ -1,4 +1,4 @@
-os: Visual Studio 2015
+os: Visual Studio 2017
 
 platform:
     - x64
@@ -9,7 +9,7 @@ cache:
 
 environment:
     matrix:
-        - PY: 36
+        - PY: 37
 
 
 build_script:
@@ -21,7 +21,7 @@ build_script:
             $env:VCVARS_PLATFORM="amd64"
             $env:PYTHON="C:/Python$env:PY-x64"
         }
-    - call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %VCVARS_PLATFORM%
+    - call "%VS150COMNTOOLS%\..\..\VC\vcvarsall.bat" %VCVARS_PLATFORM%
     - set PATH=%PYTHON%;%PATH%
     - python -c "import sys; print(sys.version_info); import platform; print(platform.architecture())"
 
