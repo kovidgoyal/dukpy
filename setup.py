@@ -8,7 +8,7 @@ cflags = []
 if not hasattr(sys, 'getwindowsversion'):
     cflags.append('-fvisibility=hidden')
 
-sources = glob.glob('src/*.c') + glob.glob('src/duktape/*.c')
+sources = sorted(glob.glob('src/*.c') + glob.glob('src/duktape/*.c'))
 version = '0.3'
 
 if __name__ == '__main__':
