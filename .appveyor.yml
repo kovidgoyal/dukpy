@@ -15,13 +15,13 @@ environment:
 build_script:
     - ps: |
         If ($env:Platform -Match "x86") {
-            $env:VCVARS_PLATFORM="x86"
+            $env:VCVARS_PLATFORM="32"
             $env:PYTHON="C:/Python$env:PY"
         } Else {
-            $env:VCVARS_PLATFORM="amd64"
+            $env:VCVARS_PLATFORM="64"
             $env:PYTHON="C:/Python$env:PY-x64"
         }
-    - call "%VS150COMNTOOLS%\..\..\VC\vcvarsall.bat" %VCVARS_PLATFORM%
+    - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars%VCVARS_PLATFORM%.bat"
     - set PATH=%PYTHON%;%PATH%
     - python -c "import sys; print(sys.version_info); import platform; print(platform.architecture())"
 
